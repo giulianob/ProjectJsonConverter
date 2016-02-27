@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Project.json Converter | Convert packages.config to project.json</title>
+    <script src="https://fb.me/react-0.14.7.js"></script>
+    <script src="https://fb.me/react-dom-0.14.7.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.23/browser.min.js"></script>
+    <style type="text/css">
+    /* Inline CSS is bad. Mmmkay... */
+    html, body {
+      margin: 0;
+      padding: 0;
+    }
+
+    .code-generator {
+      display: flex;
+      flex-direction: row;
+      min-height: 100vh;
+
+      font-family: Monaco, MonoSpace;
+      font-size: 14px;
+    }
+
+    .code-generator .left {
+      order: 0;
+      flex: 1 1 auto;
+      background-color: #505253;
+      color: #E9EBEC;
+      margin: 0;
+      border-width: 0 1px 0 0;
+      border-color: #444444;
+    }
+
+    .code-generator .right {
+      order: 0;
+      flex: 1 1 auto;
+      background-color: #6A6C6D;
+      color: #E9EBEC;
+      border: 0;
+    }
+    </style>
+  </head>
+  <body>
+    <div id="code-generator"></div>
+    <script type="text/babel">
+      var CodeGenerator = React.createClass({
+        getInitialState: function() {
+          return {result: null};
+        },
+        convertCode: function(event) {
+          try {
+            var xmlDoc = new DOMParser().parseFromString(event.target.value,"text/xml");
+            
+            var dependencies = {};
+            Array.prototype.slice.call(xmlDoc.getElementsByTagName("package")).forEach(function (pkg) {
+              dependencies[pkg.attributes["id"].value] = pkg.attributes["version"].value;
+            });
+
+            this.setState({ result: JSON.stringify({ dependencies: dependencies }, null, 2) });
+          }
+          catch (e) {
+            console.log("Exception %o", e);
+            this.setState({ result: null });
+          }
+        },
+        render: function() {
+          return (
+            <div className="code-generator">
+              <textarea
+                className="left"
+                onChange={this.convertCode}
+                placeholder="Paste your packages.config here"></textarea>
+              <textarea className="right" value={this.state.result}></textarea>
+            </div>
+          );
+        }
+      });
+
+      ReactDOM.render(
+          <CodeGenerator/>,
+          document.getElementById('code-generator')
+        );
+
+    </script>
+  </body>
+</html>
